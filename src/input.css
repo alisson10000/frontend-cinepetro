@@ -1,0 +1,9 @@
+/* src/input.css */
+@import "tailwindcss";
+
+
+
+
+/* Se você tiver algum CSS base global (como o que veio do Vite padrão para body, :root, etc.),
+   você pode movê-lo para cá, DEPOIS da diretiva @import "tailwindcss"; */
+   

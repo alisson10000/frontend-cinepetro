@@ -1,5 +1,12 @@
-import Login from "@/pages/Login" // se estiver usando alias "@", senão use "../pages/Login"
+import { Routes, Route } from 'react-router-dom'
+import PublicRoutes from './routes/PublicRoutes'
+import PrivateRoutes from './routes/PrivateRoutes'
 
 export default function App() {
-  return <Login />
+  return (
+    <Routes>
+      <Route path="/*" element={<PublicRoutes />} />
+      <Route path="/app/*" element={<PrivateRoutes />} />
+    </Routes>
+  )
 }
