@@ -1,41 +1,50 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-export default function ExcluirSerie() {
+interface Episodio {
+  id: number
+  title: string
+  season_number?: number
+  episode_number?: number
+  series_id: number
+}
+
+export default function ExcluirEpisodio() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [mensagem, setMensagem] = useState('')
   const [loading, setLoading] = useState(true)
-  const [serie, setSerie] = useState<any>(null)
+  const [episodio, setEpisodio] = useState<Episodio | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token || !id) {
       setMensagem('❌ Usuário não autenticado ou ID ausente.')
+      setLoading(false)
       return
     }
 
-    const buscarSerie = async () => {
+    const buscarEpisodio = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/series/${id}`, {
+        const res = await fetch(`http://localhost:8000/episodes/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
         if (!res.ok) throw new Error()
         const data = await res.json()
-        setSerie(data)
+        setEpisodio(data)
       } catch (err) {
-        setMensagem('❌ Série não encontrada.')
+        setMensagem('❌ Episódio não encontrado.')
       } finally {
         setLoading(false)
       }
     }
 
-    buscarSerie()
+    buscarEpisodio()
   }, [id])
 
   const handleDelete = async () => {
-    const confirmar = confirm("⚠️ Esta ação excluirá a série permanentemente. Deseja continuar?")
+    const confirmar = confirm("⚠️ Esta ação excluirá o episódio permanentemente. Deseja continuar?")
     if (!confirmar) return
 
     const token = localStorage.getItem('token')
@@ -45,7 +54,7 @@ export default function ExcluirSerie() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/series/${id}`, {
+      const response = await fetch(`http://localhost:8000/episodes/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`
@@ -53,11 +62,11 @@ export default function ExcluirSerie() {
       })
 
       if (response.ok) {
-        setMensagem('🧨 Série excluída permanentemente!')
-        setTimeout(() => navigate('/app/series/listar'), 1500)
+        setMensagem('🧨 Episódio excluído permanentemente!')
+        setTimeout(() => navigate('/app/episodios/selecionar-excluir'), 1500)
       } else {
         const error = await response.json()
-        setMensagem(`❌ Erro: ${error.detail || 'ao excluir série.'}`)
+        setMensagem(`❌ Erro: ${error.detail || 'ao excluir episódio.'}`)
       }
     } catch (error) {
       console.error('Erro ao excluir:', error)
@@ -71,27 +80,18 @@ export default function ExcluirSerie() {
 
   return (
     <div className="max-w-xl mx-auto mt-24 px-4 text-white">
-      <h1 className="text-2xl font-bold mb-6">🗑️ Excluir Série</h1>
+      <h1 className="text-2xl font-bold mb-6">🗑️ Excluir Episódio</h1>
 
-      {serie && (
+      {episodio && (
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-2">
-            Tem certeza que deseja excluir a série abaixo?
+            Tem certeza que deseja excluir o episódio abaixo?
           </h2>
-          <p className="text-gray-300"><strong>Título:</strong> {serie.title}</p>
-          <p className="text-gray-300"><strong>Início:</strong> {serie.start_year}</p>
-          <p className="text-gray-300"><strong>Fim:</strong> {serie.end_year || 'em andamento'}</p>
-
-          {serie.poster && (
-            <div className="mt-4">
-              <p className="text-sm text-gray-400">🖼️ Pôster da série:</p>
-              <img
-                src={`http://localhost:8000/static/${serie.poster}`}
-                alt="Pôster da série"
-                className="mt-2 rounded shadow w-32 border border-gray-700"
-              />
-            </div>
-          )}
+          <p className="text-gray-300"><strong>Título:</strong> {episodio.title}</p>
+          <p className="text-gray-300">
+            <strong>Temporada:</strong> {episodio.season_number || '?'} | <strong>Episódio:</strong> {episodio.episode_number || '?'}
+          </p>
+          <p className="text-gray-300"><strong>Série ID:</strong> {episodio.series_id}</p>
         </div>
       )}
 
@@ -100,10 +100,10 @@ export default function ExcluirSerie() {
           onClick={handleDelete}
           className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
         >
-          Excluir permanentemente
+          Excluir Permanentemente
         </button>
         <button
-          onClick={() => navigate('/app/series/listar')}
+          onClick={() => navigate('/app/episodios/selecionar-excluir')}
           className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
         >
           Cancelar

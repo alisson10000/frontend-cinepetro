@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { FiEdit, FiTrash } from 'react-icons/fi'
 
 type Serie = {
@@ -13,25 +14,41 @@ type Serie = {
 export default function ListarSeries() {
   const [series, setSeries] = useState<Serie[]>([])
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
+  // 🔄 Buscar séries ao carregar a página
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    fetch('http://localhost:8000/series/', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        setSeries(data)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error('Erro ao buscar séries:', err)
-        setLoading(false)
-      })
+    fetchSeries()
   }, [])
+
+  const fetchSeries = async () => {
+    const token = localStorage.getItem('token')
+    try {
+      const res = await fetch('http://localhost:8000/series/', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      })
+      if (!res.ok) throw new Error('Erro ao buscar séries')
+      const data = await res.json()
+      setSeries(data)
+    } catch (err) {
+      console.error('❌ Erro ao buscar séries:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ✏️ Redirecionar para página de edição
+  const handleEdit = (id: number) => {
+    navigate(`/app/series/editar/${id}`)
+  }
+
+  // 🗑️ Redirecionar para página de exclusão (em vez de excluir direto)
+  const handleDelete = (id: number) => {
+    navigate(`/app/series/excluir/${id}`)
+  }
 
   return (
     <div className="max-w-5xl mx-auto mt-24 px-6">
@@ -45,13 +62,20 @@ export default function ListarSeries() {
         <ul className="space-y-4">
           {series.map(serie => (
             <li key={serie.id} className="bg-gray-800 p-4 rounded-lg shadow flex gap-4">
-              {serie.poster && (
+              {/* Capa da série */}
+              {serie.poster ? (
                 <img
                   src={`http://localhost:8000/static/${serie.poster}`}
                   alt={serie.title}
                   className="w-24 h-36 object-cover rounded"
                 />
+              ) : (
+                <div className="w-24 h-36 bg-gray-700 flex items-center justify-center text-xs text-white rounded">
+                  Sem imagem
+                </div>
               )}
+
+              {/* Dados da série */}
               <div className="flex-1">
                 <h2 className="text-xl font-semibold text-yellow-400">{serie.title}</h2>
                 <p className="text-gray-300 text-sm">{serie.description || 'Sem descrição.'}</p>
@@ -59,14 +83,24 @@ export default function ListarSeries() {
                   {serie.start_year || 'Ano ?'} - {serie.end_year || 'Atual'}
                 </p>
               </div>
-              <div className="flex flex-col justify-around items-center gap-3">
-                <button className="text-blue-400 hover:text-blue-500">
+
+              {/* Ações: Editar e Excluir */}
+              {/* Ações: Editar e Excluir */}
+              <div className="flex flex-row justify-end items-center gap-3">
+                <button
+                  className="text-blue-400 hover:text-blue-500"
+                  onClick={() => handleEdit(serie.id)}
+                >
                   <FiEdit size={18} />
                 </button>
-                <button className="text-red-500 hover:text-red-600">
+                <button
+                  className="text-red-500 hover:text-red-600"
+                  onClick={() => handleDelete(serie.id)}
+                >
                   <FiTrash size={18} />
                 </button>
               </div>
+
             </li>
           ))}
         </ul>
