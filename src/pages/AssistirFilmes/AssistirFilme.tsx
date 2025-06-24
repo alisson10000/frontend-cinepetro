@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import VideoJspPlayer from '@/components/VideoJspPlayer/VideoJspPlayer'
 
@@ -7,15 +7,14 @@ export default function AssistirFilme() {
   const [filme, setFilme] = useState<any>(null)
   const [tempoSalvo, setTempoSalvo] = useState(0)
   const [carregando, setCarregando] = useState(true)
+  const ultimoTempoEnviado = useRef(0)
 
-  // 🔄 Buscar dados do filme + progresso
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token || !id) return
 
     const carregarDados = async () => {
       try {
-        // 🎬 Buscar dados do filme
         const resFilme = await fetch(`http://localhost:8000/movies/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
@@ -23,7 +22,6 @@ export default function AssistirFilme() {
         const data = await resFilme.json()
         setFilme(data)
 
-        // 🕒 Tentar buscar progresso do backend
         let tempo = 0
         try {
           const resProgress = await fetch(`http://localhost:8000/progress/get?movie_id=${id}`, {
@@ -38,7 +36,6 @@ export default function AssistirFilme() {
           console.warn('⚠️ Erro ao buscar progresso do backend:', err)
         }
 
-        // 💾 Fallback para localStorage se necessário
         if (tempo === 0) {
           const local = localStorage.getItem(`filme_${id}_tempo`)
           const localTempo = local ? parseFloat(local) : 0
@@ -56,16 +53,25 @@ export default function AssistirFilme() {
     carregarDados()
   }, [id])
 
-  // 💾 Salvar progresso no localStorage e backend
   const handleSalvarTempo = (tempo: number) => {
     if (!id || typeof tempo !== 'number') return
 
-    // Local
-    localStorage.setItem(`filme_${id}_tempo`, tempo.toString())
+    const tempoArredondado = Math.floor(tempo)
 
-    // Backend
+    if (tempoArredondado - ultimoTempoEnviado.current < 5) return
+    ultimoTempoEnviado.current = tempoArredondado
+
+    localStorage.setItem(`filme_${id}_tempo`, tempoArredondado.toString())
+
     const token = localStorage.getItem('token')
     if (!token) return
+
+    const payload = {
+      movie_id: parseInt(id),
+      time_seconds: tempoArredondado
+    }
+
+    console.log('📡 Enviando progresso ao backend:', payload)
 
     fetch('http://localhost:8000/progress/save', {
       method: 'POST',
@@ -73,16 +79,20 @@ export default function AssistirFilme() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({
-        movie_id: parseInt(id),
-        time_seconds: Math.floor(tempo)
-      })
-    }).catch(err => {
-      console.warn('⚠️ Erro ao salvar progresso no backend:', err)
+      body: JSON.stringify(payload)
     })
+      .then(async res => {
+        const text = await res.text()
+        console.log('✅ Resposta backend:', res.status, text)
+        if (!res.ok) {
+          console.warn('⚠️ Progresso não foi salvo com sucesso')
+        }
+      })
+      .catch(err => {
+        console.error('❌ Erro na requisição:', err)
+      })
   }
 
-  // ⏳ Carregando
   if (carregando) {
     return (
       <div className="text-white text-center mt-24">
@@ -91,7 +101,6 @@ export default function AssistirFilme() {
     )
   }
 
-  // ❌ Filme não encontrado
   if (!filme) {
     return (
       <div className="text-white text-center mt-24">
@@ -100,7 +109,6 @@ export default function AssistirFilme() {
     )
   }
 
-  // ✅ Render
   return (
     <div className="bg-black min-h-screen text-white flex flex-col items-center pt-20 px-4">
       <h1 className="text-2xl font-bold mb-2">🎞️ {filme.title}</h1>
@@ -116,6 +124,7 @@ export default function AssistirFilme() {
         tempoSalvo={tempoSalvo}
         onTimeUpdate={handleSalvarTempo}
         title={filme.title}
+        videoId={id}
       />
     </div>
   )

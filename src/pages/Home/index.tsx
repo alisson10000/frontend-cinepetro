@@ -10,7 +10,7 @@ export default function Home() {
   const [usuario, setUsuario] = useState<{ nome: string; email: string } | null>(null)
   const [filmes, setFilmes] = useState<any[]>([])
   const [series, setSeries] = useState<any[]>([])
-
+  const [emProgresso, setEmProgresso] = useState<any[]>([])
   const navigate = useNavigate()
 
   const banners = [
@@ -62,12 +62,29 @@ export default function Home() {
       }
     }
 
+    const buscarProgresso = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/progress/continuar', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          console.log('📦 Dados do progresso:', data)
+          setEmProgresso(data)
+        }
+      } catch (err) {
+        console.error('❌ Erro ao buscar progresso', err)
+      }
+    }
+
     buscarFilmes()
     buscarSeries()
+    buscarProgresso()
   }, [])
 
   return (
     <div className="bg-black min-h-screen text-white">
+      {/* 👤 Saudação ao usuário */}
       {usuario && (
         <div className="px-6 pt-20">
           <p className="text-sm text-gray-400">
@@ -80,6 +97,48 @@ export default function Home() {
       <section className="mt-4">
         <Carrossel itens={banners} tempo={5000} />
       </section>
+
+      {/* ⏳ Continuar Assistindo */}
+      {emProgresso.length > 0 && (
+        <section className="px-6 py-6">
+          <h2 className="text-xl font-bold mb-4">⏳ Continuar Assistindo</h2>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+            {emProgresso.map((filme) => {
+              console.log('🎥 Item em progresso:', filme)
+              return (
+                <div
+                  key={filme.movie_id}
+                  className="min-w-[150px] max-w-[150px] cursor-pointer"
+                  onClick={() => navigate(`/app/assistir/filme/${filme.movie_id}`)}
+                >
+                  <div className="w-[150px] h-[225px] overflow-hidden rounded-md bg-gray-800">
+                    {filme.poster ? (
+                      <img
+                        src={`http://localhost:8000/static/${filme.poster}`}
+                        alt={filme.title}
+                        className="w-full h-full object-cover hover:scale-105 transition duration-300"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-sm text-gray-400">
+                        Sem pôster
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm text-center text-gray-300">{filme.title}</p>
+                  <p className="text-xs text-gray-400 text-center">
+                    {Math.floor(filme.time_seconds / 60)}min de {Math.floor(filme.duration_seconds / 60)}min
+                  </p>
+                  <progress
+                    className="w-full mt-1"
+                    value={filme.time_seconds}
+                    max={filme.duration_seconds}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* 🎬 Filmes em Alta */}
       <section className="px-6 py-6">
