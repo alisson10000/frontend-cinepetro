@@ -36,6 +36,11 @@ import ExcluirEpisodio from '@/pages/episodes/ExcluirEpisodes'
 
 import AssistirFilme from '@/pages/AssistirFilmes/AssistirFilme'
 
+
+//Assistir series
+import SelecionarEpisodio from '@/pages/AssistirSerie/SelecionarEpisodio'
+import AssistirEpisodio from '@/pages/AssistirSerie/AssistirEpisodio'
+
 export default function PrivateRoutes() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
 
@@ -94,7 +99,9 @@ export default function PrivateRoutes() {
         {/* Assistir filmes */}
         <Route path="assistir/filme/:id" element={<AssistirFilme />} />
 
-
+        {/*Assistir serie*/}
+        <Route path="assistir/serie/:serieId" element={<SelecionarEpisodio />} />
+        <Route path="/assistir/:serieId/:episodioId" element={<AssistirEpisodio />} />
 
       </Route>
     </Routes>

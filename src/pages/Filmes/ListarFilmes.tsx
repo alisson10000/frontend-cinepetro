@@ -7,6 +7,7 @@ type Filme = {
   title: string
   description: string
   release_year: number
+  poster?: string
 }
 
 export default function ListarFilmes() {
@@ -51,13 +52,29 @@ export default function ListarFilmes() {
       ) : (
         <ul className="space-y-4">
           {filmes.map(filme => (
-            <li key={filme.id} className="bg-gray-800 p-4 rounded-lg shadow flex justify-between items-center">
-              <div>
+            <li key={filme.id} className="bg-gray-800 p-4 rounded-lg shadow flex gap-4">
+              {/* Poster do filme */}
+              {filme.poster ? (
+                <img
+                  src={`http://localhost:8000/static/${filme.poster}`}
+                  alt={filme.title}
+                  className="w-24 h-36 object-cover rounded"
+                />
+              ) : (
+                <div className="w-24 h-36 bg-gray-700 flex items-center justify-center text-xs text-white rounded">
+                  Sem pôster
+                </div>
+              )}
+
+              {/* Descrição do filme */}
+              <div className="flex-1">
                 <h2 className="text-xl font-semibold text-yellow-400">{filme.title}</h2>
-                <p className="text-gray-300 text-sm">{filme.description}</p>
-                <p className="text-gray-500 text-xs">Lançado em {filme.release_year}</p>
+                <p className="text-gray-300 text-sm mt-1">{filme.description}</p>
+                <p className="text-gray-500 text-xs mt-1">Lançado em {filme.release_year}</p>
               </div>
-              <div className="flex gap-3">
+
+              {/* Ações */}
+              <div className="flex flex-col justify-center gap-2">
                 <button
                   onClick={() => handleEditar(filme.id)}
                   className="text-blue-400 hover:text-blue-500"

@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/cli": "^4.1.8",
     "@videojs/themes": "^1.0.1",
+    "hls.js": "^1.6.5",
     "lucide-react": "^0.516.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@eslint/js": "^9.25.0",
     "@tailwindcss/vite": "^4.1.8",
+    "@types/hls.js": "^0.13.3",
     "@types/node": "^22.15.30",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
