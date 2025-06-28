@@ -6,13 +6,15 @@ interface Genre {
   name: string
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function EditarFilme() {
   const { id } = useParams()
   const navigate = useNavigate()
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [year, setYear] = useState('') // será 'YYYY-MM-DD'
+  const [year, setYear] = useState('')
   const [duration, setDuration] = useState('')
   const [poster, setPoster] = useState<File | null>(null)
   const [posterPreview, setPosterPreview] = useState<string | null>(null)
@@ -32,10 +34,10 @@ export default function EditarFilme() {
     const carregarDados = async () => {
       try {
         const [resFilme, resGenres] = await Promise.all([
-          fetch(`http://localhost:8000/movies/${id}`, {
+          fetch(`${backendUrl}/movies/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch('http://localhost:8000/genres/', {
+          fetch(`${backendUrl}/genres/`, {
             headers: { Authorization: `Bearer ${token}` },
           })
         ])
@@ -53,7 +55,7 @@ export default function EditarFilme() {
         setGenres(genresData)
 
         if (dataFilme.poster) {
-          const url = `http://localhost:8000/static/${dataFilme.poster}`
+          const url = `${backendUrl}/static/${dataFilme.poster}`
           setPosterPreview(url)
         }
 
@@ -100,7 +102,7 @@ export default function EditarFilme() {
     if (poster) formData.append('poster', poster)
 
     try {
-      const response = await fetch(`http://localhost:8000/movies/upload/${id}`, {
+      const response = await fetch(`${backendUrl}/movies/upload/${id}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
         body: formData

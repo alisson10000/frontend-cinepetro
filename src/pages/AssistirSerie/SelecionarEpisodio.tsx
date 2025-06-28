@@ -15,6 +15,8 @@ type Serie = {
   poster?: string
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function SelecionarEpisodio() {
   const { serieId } = useParams()
   const navigate = useNavigate()
@@ -35,10 +37,10 @@ export default function SelecionarEpisodio() {
     const carregarDados = async () => {
       try {
         const [resSerie, resEp] = await Promise.all([
-          fetch(`http://localhost:8000/series/${serieId}`, {
+          fetch(`${backendUrl}/series/${serieId}`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch(`http://localhost:8000/episodes/by_serie/${serieId}`, {
+          fetch(`${backendUrl}/episodes/by_serie/${serieId}`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ])
@@ -95,7 +97,7 @@ export default function SelecionarEpisodio() {
       <div className="flex flex-col items-center mb-6">
         {serie.poster && (
           <img
-            src={`http://localhost:8000/static/${serie.poster}`}
+            src={`${backendUrl}/static/${serie.poster}`}
             alt={serie.title}
             className="w-48 h-auto rounded shadow mb-2"
           />

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function EditarEpisodio() {
   const navigate = useNavigate()
   const { id } = useParams()
@@ -29,7 +31,7 @@ export default function EditarEpisodio() {
 
     const carregarDados = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/episodes/${id}`, {
+        const res = await fetch(`${backendUrl}/episodes/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
@@ -71,7 +73,7 @@ export default function EditarEpisodio() {
     }
 
     try {
-      const res = await fetch(`http://localhost:8000/episodes/${id}`, {
+      const res = await fetch(`${backendUrl}/episodes/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +84,7 @@ export default function EditarEpisodio() {
 
       if (res.ok) {
         alert('✅ Episódio atualizado com sucesso!')
-        navigate('/app/episodios/listar') // ✅ Rota corrigida
+        navigate('/app/episodios/listar')
       } else {
         const err = await res.json()
         alert(`❌ Erro ao atualizar episódio: ${err.detail || 'Erro desconhecido'}`)

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function ExcluirSerie() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -17,7 +19,7 @@ export default function ExcluirSerie() {
 
     const buscarSerie = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/series/${id}`, {
+        const res = await fetch(`${backendUrl}/series/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
@@ -45,7 +47,7 @@ export default function ExcluirSerie() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/series/${id}`, {
+      const response = await fetch(`${backendUrl}/series/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`
@@ -86,7 +88,7 @@ export default function ExcluirSerie() {
             <div className="mt-4">
               <p className="text-sm text-gray-400">🖼️ Pôster da série:</p>
               <img
-                src={`http://localhost:8000/static/${serie.poster}`}
+                src={`${backendUrl}/static/${serie.poster}`}
                 alt="Pôster da série"
                 className="mt-2 rounded shadow w-32 border border-gray-700"
               />

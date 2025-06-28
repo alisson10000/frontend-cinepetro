@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiEdit, FiTrash } from 'react-icons/fi'
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 type Filme = {
   id: number
   title: string
@@ -16,7 +18,7 @@ export default function ListarFilmes() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetch('http://localhost:8000/movies/', {
+    fetch(`${backendUrl}/movies/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -56,7 +58,7 @@ export default function ListarFilmes() {
               {/* Poster do filme */}
               {filme.poster ? (
                 <img
-                  src={`http://localhost:8000/static/${filme.poster}`}
+                  src={`${backendUrl}/static/${filme.poster}`}
                   alt={filme.title}
                   className="w-24 h-36 object-cover rounded"
                 />

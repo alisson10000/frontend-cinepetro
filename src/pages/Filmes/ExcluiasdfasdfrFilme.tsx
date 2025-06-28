@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-export default function DeletarFilme() {
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
+export default function ExcluirFilme() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [mensagem, setMensagem] = useState('')
@@ -17,7 +19,7 @@ export default function DeletarFilme() {
 
     const buscarFilme = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/movies/${id}`, {
+        const res = await fetch(`${backendUrl}/movies/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
@@ -34,36 +36,8 @@ export default function DeletarFilme() {
     buscarFilme()
   }, [id])
 
-  const handleSoftDelete = async () => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      setMensagem('❌ Usuário não autenticado.')
-      return
-    }
-
-    try {
-      const response = await fetch(`http://localhost:8000/movies/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
-      if (response.ok) {
-        setMensagem('✅ Filme excluído logicamente (soft delete).')
-        setTimeout(() => navigate('/app/filmes/listar'), 1500)
-      } else {
-        const error = await response.json()
-        setMensagem(`❌ Erro: ${error.detail || 'ao excluir filme.'}`)
-      }
-    } catch (error) {
-      console.error('Erro ao excluir:', error)
-      setMensagem('❌ Erro ao conectar com o servidor.')
-    }
-  }
-
-  const handleHardDelete = async () => {
-    const confirmar = confirm("⚠️ Esta ação excluirá o filme definitivamente. Deseja continuar?")
+  const handleDelete = async () => {
+    const confirmar = confirm("⚠️ Esta ação excluirá o filme permanentemente. Deseja continuar?")
     if (!confirmar) return
 
     const token = localStorage.getItem('token')
@@ -73,7 +47,7 @@ export default function DeletarFilme() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/movies/${id}/hard`, {
+      const response = await fetch(`${backendUrl}/movies/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`
@@ -85,7 +59,7 @@ export default function DeletarFilme() {
         setTimeout(() => navigate('/app/filmes/listar'), 1500)
       } else {
         const error = await response.json()
-        setMensagem(`❌ Erro: ${error.detail || 'ao excluir permanentemente.'}`)
+        setMensagem(`❌ Erro: ${error.detail || 'ao excluir o filme.'}`)
       }
     } catch (error) {
       console.error('Erro ao excluir:', error)
@@ -110,13 +84,12 @@ export default function DeletarFilme() {
           <p className="text-gray-300"><strong>Ano:</strong> {filme.year}</p>
           <p className="text-gray-300"><strong>Duração:</strong> {filme.duration} min</p>
 
-          {/* Imagem do pôster, se existir */}
           {filme.poster && (
             <div className="mt-4">
               <p className="text-sm text-gray-400">🖼️ Pôster do filme:</p>
               <img
-                src={`http://localhost:8000/static/${filme.poster}`}
-                alt="Pôster"
+                src={`${backendUrl}/static/${filme.poster}`}
+                alt="Pôster do filme"
                 className="mt-2 rounded shadow w-32 border border-gray-700"
               />
             </div>
@@ -126,16 +99,10 @@ export default function DeletarFilme() {
 
       <div className="flex flex-col gap-4">
         <button
-          onClick={handleSoftDelete}
-          className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Soft Delete (exclusão lógica)
-        </button>
-        <button
-          onClick={handleHardDelete}
+          onClick={handleDelete}
           className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
         >
-          Hard Delete (exclusão permanente)
+          Excluir permanentemente
         </button>
         <button
           onClick={() => navigate('/app/filmes/listar')}

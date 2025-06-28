@@ -7,6 +7,9 @@ interface Filme {
   year: number
 }
 
+// 🌐 URL do backend vinda do .env.local ou fallback para o hostname atual
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function SelecionarFilmeExcluir() {
   const [filmes, setFilmes] = useState<Filme[]>([])
   const [mensagem, setMensagem] = useState('')
@@ -23,7 +26,7 @@ export default function SelecionarFilmeExcluir() {
 
     const fetchFilmes = async () => {
       try {
-        const res = await fetch('http://localhost:8000/movies/', {
+        const res = await fetch(`${backendUrl}/movies/`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (!res.ok) throw new Error()

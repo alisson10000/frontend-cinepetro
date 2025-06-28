@@ -77,6 +77,8 @@ export default function VideoJspPlayer({
     return () => clearTimeout(timeout)
   }, [src, poster, tempoSalvo, onTimeUpdate, videoId])
 
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div data-vjs-player>
@@ -91,7 +93,7 @@ export default function VideoJspPlayer({
               kind="subtitles"
               label="Português"
               srcLang="pt"
-              src={`http://localhost:8000/static/subtitles/${videoId}.vtt`}
+              src={`${backendUrl}/static/subtitles/${videoId}.vtt`}
               default
             />
           )}

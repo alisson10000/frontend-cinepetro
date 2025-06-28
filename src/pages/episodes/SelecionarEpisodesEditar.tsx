@@ -14,6 +14,8 @@ type Episodio = {
   series_id: number
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function SelecionarEpisodioEditar() {
   const navigate = useNavigate()
   const [series, setSeries] = useState<Serie[]>([])
@@ -24,7 +26,7 @@ export default function SelecionarEpisodioEditar() {
   // 🔄 Carrega todas as séries
   useEffect(() => {
     const token = localStorage.getItem('token')
-    fetch('http://localhost:8000/series/', {
+    fetch(`${backendUrl}/series/`, {
       headers: { Authorization: `Bearer ${token || ''}` }
     })
       .then(res => res.json())
@@ -38,7 +40,7 @@ export default function SelecionarEpisodioEditar() {
 
     setCarregando(true)
     const token = localStorage.getItem('token')
-    fetch(`http://localhost:8000/episodes/by_serie/${serieSelecionada}`, {
+    fetch(`${backendUrl}/episodes/by_serie/${serieSelecionada}`, {
       headers: { Authorization: `Bearer ${token || ''}` }
     })
       .then(res => res.json())

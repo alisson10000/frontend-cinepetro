@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import backgroundImage from '@/assets/bg-cinepetro.png'
 import logo from '@/assets/cinepetro-icon.png'
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -12,9 +14,10 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setErro('')
+    console.log('🚀 Iniciando login com:', { email, senha })
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/auth/login', {
+      const response = await fetch(`${backendUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password: senha }),
@@ -24,15 +27,14 @@ export default function LoginPage() {
       console.log('🔐 Resposta do backend:', data)
 
       if (!response.ok || !data.access_token) {
+        console.warn('⚠️ Falha no login:', data.detail)
         throw new Error(data.detail || 'Credenciais inválidas')
       }
 
-      // Salvar token e dados do usuário
+      // Armazenar dados do usuário no localStorage
       localStorage.setItem('token', data.access_token)
       localStorage.setItem('user_id', String(data.user_id))
       localStorage.setItem('is_admin', String(data.is_admin))
-
-      // Salvar nome e email no localStorage
       localStorage.setItem(
         'user',
         JSON.stringify({
@@ -41,9 +43,18 @@ export default function LoginPage() {
         })
       )
 
-      navigate('/app')
+      console.log('✅ Login bem-sucedido. Redirecionando...')
+
+      if (data.is_admin) {
+        console.log('➡️ Redirecionando para /app/admin')
+        navigate('/app/admin')
+      } else {
+        console.log('➡️ Redirecionando para /app')
+        navigate('/app')
+      }
+
     } catch (err: any) {
-      console.error('❌ Erro no login:', err)
+      console.error('❌ Erro ao tentar logar:', err)
       setErro(err.message || 'Erro ao tentar logar')
     }
   }
@@ -57,14 +68,8 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-sm bg-[#111111cc] backdrop-blur-sm p-8 rounded-2xl shadow-2xl space-y-6">
         <div className="flex items-center justify-center gap-2">
-          <img
-            src={logo}
-            alt="Logo CinePetro"
-            className="h-[64px] w-[64px] object-contain"
-          />
-          <h1 className="text-[32px] font-extrabold text-white leading-[1]">
-            CINEPETRO
-          </h1>
+          <img src={logo} alt="Logo CinePetro" className="h-[64px] w-[64px] object-contain" />
+          <h1 className="text-[32px] font-extrabold text-white leading-[1]">CINEPETRO</h1>
         </div>
 
         <h2 className="text-xl font-bold text-center text-white">Login</h2>

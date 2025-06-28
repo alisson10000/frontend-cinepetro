@@ -6,6 +6,8 @@ type Serie = {
   title: string
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function CriarEpisodios() {
   const navigate = useNavigate()
 
@@ -20,7 +22,7 @@ export default function CriarEpisodios() {
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    fetch('http://localhost:8000/series/', {
+    fetch(`${backendUrl}/series/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -48,7 +50,7 @@ export default function CriarEpisodios() {
     const token = localStorage.getItem('token')
 
     try {
-      const res = await fetch('http://localhost:8000/episodes/', {
+      const res = await fetch(`${backendUrl}/episodes/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -70,6 +72,8 @@ export default function CriarEpisodios() {
       alert('Erro ao conectar com o servidor.')
     }
   }
+
+  // ... (restante do JSX permanece igual)
 
   return (
     <div className="max-w-2xl mx-auto mt-24 px-4 text-white">

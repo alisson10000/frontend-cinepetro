@@ -14,6 +14,8 @@ interface Episodio {
   series_id: number
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function SelecionarEpisodioExcluir() {
   const navigate = useNavigate()
   const [series, setSeries] = useState<Serie[]>([])
@@ -25,7 +27,7 @@ export default function SelecionarEpisodioExcluir() {
   // 🔄 Carrega todas as séries
   useEffect(() => {
     const token = localStorage.getItem('token')
-    fetch('http://localhost:8000/series/', {
+    fetch(`${backendUrl}/series/`, {
       headers: { Authorization: `Bearer ${token || ''}` }
     })
       .then(res => {
@@ -43,7 +45,7 @@ export default function SelecionarEpisodioExcluir() {
     setLoading(true)
     setMensagem('')
     const token = localStorage.getItem('token')
-    fetch(`http://localhost:8000/episodes/by_serie/${serieSelecionada}`, {
+    fetch(`${backendUrl}/episodes/by_serie/${serieSelecionada}`, {
       headers: { Authorization: `Bearer ${token || ''}` }
     })
       .then(res => {

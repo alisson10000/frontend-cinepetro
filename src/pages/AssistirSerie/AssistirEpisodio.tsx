@@ -13,10 +13,13 @@ type Episodio = {
 }
 
 type LocationState = {
-  episodios: Episodio[]
-  episodioAtual: number
-  temporada: number
+  episodios?: Episodio[]
+  episodioAtual?: number
+  temporada?: number
+  tempoSalvo?: number
 }
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
 
 export default function AssistirEpisodio() {
   const { serieId, episodioId } = useParams()
@@ -27,28 +30,44 @@ export default function AssistirEpisodio() {
   const [tempoSalvo, setTempoSalvo] = useState(0)
   const ultimoTempoEnviado = useRef(0)
 
-  const state = location.state as LocationState | null
-  const episodios = state?.episodios || []
+  const state = location.state as LocationState || {}
+  const episodios = state.episodios || []
   const episodioAtualId = parseInt(episodioId || '0')
 
   const episodioIndex = episodios.findIndex(ep => ep.id === episodioAtualId)
   const proximo = episodioIndex >= 0 ? episodios[episodioIndex + 1] : null
 
   useEffect(() => {
-    const episodioEncontrado = episodios.find(ep => ep.id === episodioAtualId)
-    if (episodioEncontrado) {
-      setEpisodio(episodioEncontrado)
-    } else {
-      // fallback para busca por ID (opcional)
-      fetch(`http://localhost:8000/episodes/${episodioId}`)
-        .then(res => res.json())
-        .then(data => setEpisodio(data))
-        .catch(() => setEpisodio(null))
+    const carregarEpisodio = async () => {
+      // Se já veio no state, usa diretamente
+      const episodioLocal = episodios.find(ep => ep.id === episodioAtualId)
+
+      if (episodioLocal) {
+        setEpisodio(episodioLocal)
+      } else {
+        try {
+          const res = await fetch(`${backendUrl}/episodes/${episodioId}`)
+          if (res.ok) {
+            const data = await res.json()
+            setEpisodio(data)
+          } else {
+            setEpisodio(null)
+          }
+        } catch {
+          setEpisodio(null)
+        }
+      }
+
+      // Tempo salvo: do state (preferencial) ou localStorage
+      const tempoState = state.tempoSalvo
+      const tempoLocal = localStorage.getItem(`episodio_${episodioId}_tempo`)
+      const tempoFinal = tempoState ?? (tempoLocal ? parseFloat(tempoLocal) : 0)
+
+      setTempoSalvo(tempoFinal)
     }
 
-    const tempoLocal = localStorage.getItem(`episodio_${episodioId}_tempo`)
-    setTempoSalvo(tempoLocal ? parseFloat(tempoLocal) : 0)
-  }, [episodioId, episodios])
+    carregarEpisodio()
+  }, [episodioId, episodios, state])
 
   const handleSalvarTempo = (tempo: number) => {
     if (!episodioId || typeof tempo !== 'number') return
@@ -62,14 +81,14 @@ export default function AssistirEpisodio() {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    fetch('http://localhost:8000/progress/save', {
+    fetch(`${backendUrl}/progress/save`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({
-        episode_id: parseInt(episodioId),
+        episode_id: episodioAtualId,
         time_seconds: tempoArredondado
       })
     }).catch(console.error)
@@ -81,7 +100,7 @@ export default function AssistirEpisodio() {
         state: {
           episodios,
           episodioAtual: proximo.id,
-          temporada: state?.temporada || 1
+          temporada: proximo.season_number || state.temporada || 1
         }
       })
     }
@@ -104,14 +123,14 @@ export default function AssistirEpisodio() {
       )}
 
       <VideoSeriePlayer
-        src={`http://localhost:8000/static/videos_series/${serieId}/${seasonNumber}/${episodio.id}.mp4`}
+        src={`${backendUrl}/static/videos_series/${serieId}/${seasonNumber}/${episodio.id}.mp4`}
         tempoSalvo={tempoSalvo}
         onTimeUpdate={handleSalvarTempo}
         title={episodio.title}
         videoId={episodioId}
         onNextEpisode={proximo ? handleProximo : undefined}
         proximoTitulo={proximo?.title || ''}
-        proximoThumbnail={`http://localhost:8000/static/posters/ep${proximo?.id || 'x'}.jpg`}
+        proximoThumbnail={`${backendUrl}/static/posters/ep${proximo?.id || 'x'}.jpg`}
         resumoTemporada={episodio.description}
       />
     </div>

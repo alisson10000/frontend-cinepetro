@@ -11,12 +11,13 @@ type Serie = {
   poster?: string
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function ListarSeries() {
   const [series, setSeries] = useState<Serie[]>([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
-  // 🔄 Buscar séries ao carregar a página
   useEffect(() => {
     fetchSeries()
   }, [])
@@ -24,9 +25,9 @@ export default function ListarSeries() {
   const fetchSeries = async () => {
     const token = localStorage.getItem('token')
     try {
-      const res = await fetch('http://localhost:8000/series/', {
+      const res = await fetch(`${backendUrl}/series/`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         }
       })
@@ -40,12 +41,10 @@ export default function ListarSeries() {
     }
   }
 
-  // ✏️ Redirecionar para página de edição
   const handleEdit = (id: number) => {
     navigate(`/app/series/editar/${id}`)
   }
 
-  // 🗑️ Redirecionar para página de exclusão (em vez de excluir direto)
   const handleDelete = (id: number) => {
     navigate(`/app/series/excluir/${id}`)
   }
@@ -62,10 +61,9 @@ export default function ListarSeries() {
         <ul className="space-y-4">
           {series.map(serie => (
             <li key={serie.id} className="bg-gray-800 p-4 rounded-lg shadow flex gap-4">
-              {/* Capa da série */}
               {serie.poster ? (
                 <img
-                  src={`http://localhost:8000/static/${serie.poster}`}
+                  src={`${backendUrl}/static/${serie.poster}`}
                   alt={serie.title}
                   className="w-24 h-36 object-cover rounded"
                 />
@@ -75,7 +73,6 @@ export default function ListarSeries() {
                 </div>
               )}
 
-              {/* Dados da série */}
               <div className="flex-1">
                 <h2 className="text-xl font-semibold text-yellow-400">{serie.title}</h2>
                 <p className="text-gray-300 text-sm">{serie.description || 'Sem descrição.'}</p>
@@ -84,8 +81,6 @@ export default function ListarSeries() {
                 </p>
               </div>
 
-              {/* Ações: Editar e Excluir */}
-              {/* Ações: Editar e Excluir */}
               <div className="flex flex-row justify-end items-center gap-3">
                 <button
                   className="text-blue-400 hover:text-blue-500"
@@ -100,7 +95,6 @@ export default function ListarSeries() {
                   <FiTrash size={18} />
                 </button>
               </div>
-
             </li>
           ))}
         </ul>

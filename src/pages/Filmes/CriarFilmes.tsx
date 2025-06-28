@@ -6,26 +6,24 @@ interface Genre {
   name: string
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function CriarFilme() {
   const navigate = useNavigate()
 
-  // 🎬 Estados dos campos do formulário
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [year, setYear] = useState('') // será apenas o ano (ex: "2024")
+  const [year, setYear] = useState('')
   const [duration, setDuration] = useState('')
   const [poster, setPoster] = useState<File | null>(null)
 
-  // 🎭 Gêneros disponíveis e selecionados
   const [genres, setGenres] = useState<Genre[]>([])
   const [selectedGenres, setSelectedGenres] = useState<number[]>([])
 
-  // 📣 Feedback ao usuário
   const [mensagem, setMensagem] = useState('')
 
-  // 🔄 Busca inicial dos gêneros
   useEffect(() => {
-    fetch('http://localhost:8000/genres/')
+    fetch(`${backendUrl}/genres/`)
       .then(res => res.json())
       .then(data => {
         setGenres(data)
@@ -37,14 +35,12 @@ export default function CriarFilme() {
       })
   }, [])
 
-  // 🔘 Controle da seleção de gêneros
   const handleCheckboxChange = (id: number) => {
     setSelectedGenres(prev =>
       prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
     )
   }
 
-  // 📤 Submissão do formulário
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const token = localStorage.getItem('token')
@@ -52,7 +48,7 @@ export default function CriarFilme() {
 
     formData.append('title', title)
     formData.append('description', description)
-    formData.append('year', year) // já convertido para ano puro
+    formData.append('year', year)
     formData.append('duration', duration)
     formData.append('genre_ids', JSON.stringify(selectedGenres))
 
@@ -65,7 +61,7 @@ export default function CriarFilme() {
     })
 
     try {
-      const response = await fetch('http://localhost:8000/movies/upload', {
+      const response = await fetch(`${backendUrl}/movies/upload`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -90,7 +86,6 @@ export default function CriarFilme() {
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">📽️ Cadastrar Novo Filme</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
-        {/* 🎬 Título */}
         <input
           type="text"
           placeholder="Título"
@@ -100,7 +95,6 @@ export default function CriarFilme() {
           required
         />
 
-        {/* 📝 Descrição */}
         <textarea
           placeholder="Descrição"
           value={description}
@@ -109,12 +103,11 @@ export default function CriarFilme() {
           required
         />
 
-        {/* 📅 Ano (extraído de uma data completa) */}
         <input
           type="date"
           placeholder="Ano de lançamento"
           onChange={(e) => {
-            const selectedDate = e.target.value // Ex: "2023-12-01"
+            const selectedDate = e.target.value
             const onlyYear = new Date(selectedDate).getFullYear().toString()
             setYear(onlyYear)
           }}
@@ -122,7 +115,6 @@ export default function CriarFilme() {
           required
         />
 
-        {/* ⏱️ Duração */}
         <input
           type="number"
           placeholder="Duração (minutos)"
@@ -132,7 +124,6 @@ export default function CriarFilme() {
           required
         />
 
-        {/* 🖼️ Upload do pôster */}
         <div>
           <label className="block font-semibold mb-1">📷 Pôster</label>
           <input
@@ -143,7 +134,6 @@ export default function CriarFilme() {
           />
         </div>
 
-        {/* 🎭 Gêneros */}
         <div className="mt-6">
           <p className="mb-2 font-semibold border-b border-gray-700 pb-1">🎭 Gêneros</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2">
@@ -162,7 +152,6 @@ export default function CriarFilme() {
           </div>
         </div>
 
-        {/* ✅ Botão de envio */}
         <button
           type="submit"
           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition"
@@ -170,7 +159,6 @@ export default function CriarFilme() {
           Cadastrar Filme
         </button>
 
-        {/* 📣 Mensagem ao usuário */}
         {mensagem && (
           <p className="text-sm mt-2 text-yellow-400 font-semibold text-center">
             {mensagem}

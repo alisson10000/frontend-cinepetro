@@ -6,10 +6,13 @@ import logo from '@/assets/cinepetro-icon.png'
 export default function Menu() {
   const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
+  const isAdmin = localStorage.getItem('is_admin') === 'true'
 
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    localStorage.removeItem('is_admin')
+    localStorage.removeItem('user_id')
     navigate('/')
   }
 
@@ -26,9 +29,13 @@ export default function Menu() {
           {/* Menu Desktop */}
           <nav className="hidden md:flex gap-6 ml-6">
             <Link to="/app/" className="text-white hover:text-yellow-400 transition">Home</Link>
-            <Link to="/app/filmes" className="text-white hover:text-yellow-400 transition">Gerenciar Filmes</Link>
-            <Link to="/app/series" className="text-white hover:text-yellow-400 transition">Gerenciar Séries</Link>
-            <Link to="/app/episodios" className="text-white hover:text-yellow-400 transition">Gerenciar Episódios</Link>
+            {isAdmin && (
+              <>
+                <Link to="/app/filmes" className="text-white hover:text-yellow-400 transition">Gerenciar Filmes</Link>
+                <Link to="/app/series" className="text-white hover:text-yellow-400 transition">Gerenciar Séries</Link>
+                <Link to="/app/episodios" className="text-white hover:text-yellow-400 transition">Gerenciar Episódios</Link>
+              </>
+            )}
           </nav>
 
           {/* Ações Desktop */}
@@ -57,15 +64,19 @@ export default function Menu() {
           <Link to="/app/" className="block text-white hover:text-yellow-400" onClick={() => setIsOpen(false)}>
             Home
           </Link>
-          <Link to="/app/filmes" className="block text-white hover:text-yellow-400" onClick={() => setIsOpen(false)}>
-            Gerenciar Filmes
-          </Link>
-          <Link to="/app/series" className="block text-white hover:text-yellow-400" onClick={() => setIsOpen(false)}>
-            Gerenciar Séries
-          </Link>
-          <Link to="/app/episodios" className="block text-white hover:text-yellow-400" onClick={() => setIsOpen(false)}>
-            Gerenciar Episódios
-          </Link>
+          {isAdmin && (
+            <>
+              <Link to="/app/filmes" className="block text-white hover:text-yellow-400" onClick={() => setIsOpen(false)}>
+                Gerenciar Filmes
+              </Link>
+              <Link to="/app/series" className="block text-white hover:text-yellow-400" onClick={() => setIsOpen(false)}>
+                Gerenciar Séries
+              </Link>
+              <Link to="/app/episodios" className="block text-white hover:text-yellow-400" onClick={() => setIsOpen(false)}>
+                Gerenciar Episódios
+              </Link>
+            </>
+          )}
 
           {/* Ações Mobile */}
           <div className="flex justify-between items-center pt-4">

@@ -7,13 +7,15 @@ type Serie = {
   poster?: string
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function SelecionarSerieEditar() {
   const navigate = useNavigate()
   const [series, setSeries] = useState<Serie[]>([])
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    fetch('http://localhost:8000/series/', {
+    fetch(`${backendUrl}/series/`, {
       headers: {
         Authorization: `Bearer ${token || ''}`
       }
@@ -39,7 +41,7 @@ export default function SelecionarSerieEditar() {
           >
             {serie.poster ? (
               <img
-                src={`http://localhost:8000/static/${serie.poster}`}
+                src={`${backendUrl}/static/${serie.poster}`}
                 alt={serie.title}
                 className="w-24 h-36 object-cover rounded"
               />

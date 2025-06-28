@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactPlayer from 'react-player'
 
-
 interface Props {
   src: string
   tempoSalvo?: number
@@ -30,15 +29,24 @@ export default function VideoSeriePlayer({
   proximoThumbnail
 }: Props) {
   const playerRef = useRef<ReactPlayer | null>(null)
-  const [currentTime, setCurrentTime] = useState(tempoSalvo)
+  const hasSeekedRef = useRef(false) // ✅ evita múltiplos seeks
   const [isEnded, setIsEnded] = useState(false)
 
+  // ⏩ Seeks apenas uma vez para tempo salvo
+  const handleReady = () => {
+    if (playerRef.current && tempoSalvo > 0 && !hasSeekedRef.current) {
+      playerRef.current.seekTo(tempoSalvo, 'seconds')
+      hasSeekedRef.current = true
+    }
+  }
+
+  // 🕒 Atualiza tempo para salvar no backend
   const handleProgress = (progress: { playedSeconds: number }) => {
     const tempo = Math.floor(progress.playedSeconds)
-    setCurrentTime(tempo)
     if (onTimeUpdate) onTimeUpdate(tempo)
   }
 
+  // 📺 Quando termina o episódio
   const handleEnded = () => {
     setIsEnded(true)
     if (onNextEpisode) onNextEpisode()
@@ -54,6 +62,9 @@ export default function VideoSeriePlayer({
           controls
           width="100%"
           height="auto"
+          onReady={handleReady}
+          onProgress={handleProgress}
+          onEnded={handleEnded}
           config={{
             file: {
               attributes: {
@@ -72,15 +83,13 @@ export default function VideoSeriePlayer({
                 : [],
             },
           }}
-          onProgress={handleProgress}
-          onEnded={handleEnded}
         />
 
         {posterSrc && (
           <img
             src={posterSrc}
             alt="Poster da série"
-            className="absolute top-0 left-0 w-full h-full object-cover opacity-10"
+            className="absolute top-0 left-0 w-full h-full object-cover opacity-10 pointer-events-none"
           />
         )}
       </div>

@@ -7,11 +7,12 @@ type Genero = {
   name: string
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function EditarSeries() {
   const navigate = useNavigate()
   const { id } = useParams()
 
-  // 📦 Estados da série
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [startYear, setStartYear] = useState('')
@@ -19,7 +20,6 @@ export default function EditarSeries() {
   const [poster, setPoster] = useState<File | null>(null)
   const [posterAtual, setPosterAtual] = useState<string | null>(null)
 
-  // 🎭 Gêneros disponíveis e selecionados
   const [generos, setGeneros] = useState<Genero[]>([])
   const [generosSelecionados, setGenerosSelecionados] = useState<number[]>([])
 
@@ -31,10 +31,10 @@ export default function EditarSeries() {
       try {
         console.log('🔄 Buscando dados da série e gêneros...')
         const [resSerie, resGeneros] = await Promise.all([
-          fetch(`http://localhost:8000/series/${id}`, {
+          fetch(`${backendUrl}/series/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch(`http://localhost:8000/genres/`, {
+          fetch(`${backendUrl}/genres/`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ])
@@ -67,13 +67,9 @@ export default function EditarSeries() {
   }, [id])
 
   const handleGeneroChange = (id: number) => {
-    setGenerosSelecionados(prev => {
-      const atualizados = prev.includes(id)
-        ? prev.filter(g => g !== id)
-        : [...prev, id]
-      console.log('🎯 Gêneros selecionados agora:', atualizados)
-      return atualizados
-    })
+    setGenerosSelecionados(prev =>
+      prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +85,7 @@ export default function EditarSeries() {
 
     const token = localStorage.getItem('token')
     console.log('📤 Enviando dados da série para atualização...')
-    const res = await fetch(`http://localhost:8000/series/upload/${id}`, {
+    const res = await fetch(`${backendUrl}/series/upload/${id}`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token || ''}` },
       body: formData
@@ -159,7 +155,7 @@ export default function EditarSeries() {
           {posterAtual && (
             <div className="mt-2">
               <p className="text-sm text-gray-300">🖼️ Pôster atual:</p>
-              <img src={`http://localhost:8000/static/${posterAtual}`} alt="Pôster" className="mt-1 rounded shadow w-32 border border-gray-600" />
+              <img src={`${backendUrl}/static/${posterAtual}`} alt="Pôster" className="mt-1 rounded shadow w-32 border border-gray-600" />
             </div>
           )}
         </div>

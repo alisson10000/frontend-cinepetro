@@ -1,3 +1,4 @@
+// ...importações mantidas
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Carrossel from '@/components/Carrocel/index'
@@ -5,6 +6,8 @@ import Carrossel from '@/components/Carrocel/index'
 import bannerAquaman from '@/assets/banner-aquaman.jpg'
 import bannerSpiderman from '@/assets/spiderman.jpg'
 import bannerDeadpoll from '@/assets/deadpool.jpg'
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
 
 export default function Home() {
   const [usuario, setUsuario] = useState<{ nome: string; email: string } | null>(null)
@@ -28,63 +31,36 @@ export default function Home() {
         const user = JSON.parse(userString)
         setUsuario(user)
       } catch (err) {
-        console.error('❌ Erro ao ler usuário do localStorage', err)
+        console.error('Erro ao ler usuário do localStorage', err)
       }
     }
 
     if (!token) return
 
-    const buscarFilmes = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch('http://localhost:8000/movies/', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setFilmes(data)
-        }
+        const [filmesRes, seriesRes, progressoRes] = await Promise.all([
+          fetch(`${backendUrl}/movies/`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${backendUrl}/series/`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${backendUrl}/progress/continuar`, { headers: { Authorization: `Bearer ${token}` } })
+        ])
+
+        if (filmesRes.ok) setFilmes(await filmesRes.json())
+        if (seriesRes.ok) setSeries(await seriesRes.json())
+        if (progressoRes.ok) setEmProgresso(await progressoRes.json())
       } catch (err) {
-        console.error('❌ Erro ao carregar filmes', err)
+        console.error('Erro ao buscar dados', err)
       }
     }
 
-    const buscarSeries = async () => {
-      try {
-        const res = await fetch('http://localhost:8000/series/', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setSeries(data)
-        }
-      } catch (err) {
-        console.error('❌ Erro ao carregar séries', err)
-      }
-    }
-
-    const buscarProgresso = async () => {
-      try {
-        const res = await fetch('http://localhost:8000/progress/continuar', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        if (res.ok) {
-          const data = await res.json()
-          console.log('📦 Dados do progresso:', data)
-          setEmProgresso(data)
-        }
-      } catch (err) {
-        console.error('❌ Erro ao buscar progresso', err)
-      }
-    }
-
-    buscarFilmes()
-    buscarSeries()
-    buscarProgresso()
+    fetchData()
   }, [])
+
+  const progressoFilmes = emProgresso.filter(p => p.type === 'movie')
+  const progressoSeries = emProgresso.filter(p => p.type === 'series')
 
   return (
     <div className="bg-black min-h-screen text-white">
-      {/* 👤 Saudação ao usuário */}
       {usuario && (
         <div className="px-6 pt-20">
           <p className="text-sm text-gray-400">
@@ -93,58 +69,89 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🎞️ Banner principal */}
       <section className="mt-4">
         <Carrossel itens={banners} tempo={5000} />
       </section>
 
-      {/* ⏳ Continuar Assistindo */}
-      {emProgresso.length > 0 && (
+      {progressoFilmes.length > 0 && (
         <section className="px-6 py-6">
-          <h2 className="text-xl font-bold mb-4">⏳ Continuar Assistindo</h2>
+          <h2 className="text-xl font-bold mb-4">⏳ Continuar Assistindo - Filmes</h2>
           <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-            {emProgresso.map((filme) => {
-              console.log('🎥 Item em progresso:', filme)
-              return (
-                <div
-                  key={filme.movie_id}
-                  className="min-w-[150px] max-w-[150px] cursor-pointer"
-                  onClick={() => navigate(`/app/assistir/filme/${filme.movie_id}`)}
-                >
-                  <div className="w-[150px] h-[225px] overflow-hidden rounded-md bg-gray-800">
-                    {filme.poster ? (
-                      <img
-                        src={`http://localhost:8000/static/${filme.poster}`}
-                        alt={filme.title}
-                        className="w-full h-full object-cover hover:scale-105 transition duration-300"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-sm text-gray-400">
-                        Sem pôster
-                      </div>
-                    )}
-                  </div>
-                  <p className="mt-2 text-sm text-center text-gray-300">{filme.title}</p>
-                  <p className="text-xs text-gray-400 text-center">
-                    {Math.floor(filme.time_seconds / 60)}min de {Math.floor(filme.duration_seconds / 60)}min
-                  </p>
-                  <progress
-                    className="w-full mt-1"
-                    value={filme.time_seconds}
-                    max={filme.duration_seconds}
-                  />
+            {progressoFilmes.map(filme => (
+              <div
+                key={filme.movie_id}
+                className="min-w-[150px] max-w-[150px] cursor-pointer"
+                onClick={() => navigate(`/app/assistir/filme/${filme.movie_id}`)}
+              >
+                <div className="w-[150px] h-[225px] overflow-hidden rounded-md bg-gray-800">
+                  {filme.poster ? (
+                    <img
+                      src={`${backendUrl}/static/${filme.poster}`}
+                      alt={filme.title}
+                      className="w-full h-full object-cover hover:scale-105 transition duration-300"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-sm text-gray-400">Sem pôster</div>
+                  )}
                 </div>
-              )
-            })}
+                <p className="mt-2 text-sm text-center text-gray-300">{filme.title}</p>
+                <p className="text-xs text-gray-400 text-center">
+                  {Math.floor(filme.time_seconds / 60)}min de {Math.floor(filme.duration_seconds / 60)}min
+                </p>
+                <progress className="w-full mt-1" value={filme.time_seconds} max={filme.duration_seconds} />
+              </div>
+            ))}
           </div>
         </section>
       )}
 
-      {/* 🎬 Filmes em Alta */}
+      {progressoSeries.length > 0 && (
+        <section className="px-6 py-6">
+          <h2 className="text-xl font-bold mb-4">📺 Continuar Assistindo - Séries</h2>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+            {progressoSeries.map(ep => (
+              <div
+                key={ep.episode_id}
+                className="min-w-[150px] max-w-[150px] cursor-pointer"
+                onClick={() =>
+                  navigate(`/app/assistir/${ep.series_id}/${ep.episode_id}`, {
+                    state: {
+                      episodios: [], // você pode preencher isso futuramente com a temporada
+                      episodioAtual: ep.episode_id,
+                      temporada: ep.season_number,
+                      tempoSalvo: ep.time_seconds
+                    }
+                  })
+                }
+              >
+                <div className="w-[150px] h-[225px] overflow-hidden rounded-md bg-gray-800">
+                  {ep.poster ? (
+                    <img
+                      src={`${backendUrl}/static/${ep.poster}`}
+                      alt={ep.series_title || 'Série'}
+                      className="w-full h-full object-cover hover:scale-105 transition duration-300"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-sm text-gray-400">Sem pôster</div>
+                  )}
+                </div>
+                <p className="mt-2 text-sm text-center text-gray-300">
+                  {ep.series_title || 'Série'} - Ep {ep.episode_number}
+                </p>
+                <p className="text-xs text-gray-400 text-center">
+                  {Math.floor(ep.time_seconds / 60)}min de {Math.floor(ep.duration_seconds / 60)}min
+                </p>
+                <progress className="w-full mt-1" value={ep.time_seconds} max={ep.duration_seconds} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="px-6 py-6">
         <h2 className="text-xl font-bold mb-4">🎬 Filmes em Alta</h2>
         <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-          {filmes.map((filme) => (
+          {filmes.map(filme => (
             <div
               key={filme.id}
               className="min-w-[150px] max-w-[150px] cursor-pointer"
@@ -152,7 +159,7 @@ export default function Home() {
             >
               <div className="w-[150px] h-[225px] overflow-hidden rounded-md">
                 <img
-                  src={`http://localhost:8000/static/${filme.poster}`}
+                  src={`${backendUrl}/static/${filme.poster}`}
                   alt={filme.title}
                   className="w-full h-full object-cover hover:scale-105 transition duration-300"
                 />
@@ -163,11 +170,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 📺 Séries em Destaque */}
       <section className="px-6 pb-10">
         <h2 className="text-xl font-bold mb-4">📺 Séries em Destaque</h2>
         <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-          {series.map((serie) => (
+          {series.map(serie => (
             <div
               key={serie.id}
               className="min-w-[150px] max-w-[150px] cursor-pointer"
@@ -176,7 +182,7 @@ export default function Home() {
               <div className="w-[150px] h-[225px] overflow-hidden rounded-md bg-gray-700">
                 {serie.poster ? (
                   <img
-                    src={`http://localhost:8000/static/${serie.poster}`}
+                    src={`${backendUrl}/static/${serie.poster}`}
                     alt={serie.title}
                     className="w-full h-full object-cover hover:scale-105 transition duration-300"
                   />

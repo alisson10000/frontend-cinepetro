@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 interface Filme {
   id: number
   title: string
@@ -15,7 +17,7 @@ export default function SelecionarFilmeEditar() {
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    fetch('http://localhost:8000/movies/', {
+    fetch(`${backendUrl}/movies/`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -33,7 +35,6 @@ export default function SelecionarFilmeEditar() {
     <div className="max-w-3xl mx-auto mt-24 px-4 text-white">
       <h1 className="text-2xl font-bold mb-1">✏️ Selecione um Filme para Editar</h1>
 
-      {/* Mensagem abaixo do título, alinhada à esquerda */}
       {(mensagem || (!loading && filmes.length === 0)) && (
         <p className={`mb-6 ${mensagem ? 'text-red-400' : 'text-gray-400'}`}>
           {mensagem || '📭 Nenhum filme disponível para edição.'}

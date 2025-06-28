@@ -9,6 +9,8 @@ interface Episodio {
   series_id: number
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function ExcluirEpisodio() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -26,7 +28,7 @@ export default function ExcluirEpisodio() {
 
     const buscarEpisodio = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/episodes/${id}`, {
+        const res = await fetch(`${backendUrl}/episodes/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
@@ -54,7 +56,7 @@ export default function ExcluirEpisodio() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/episodes/${id}`, {
+      const response = await fetch(`${backendUrl}/episodes/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`

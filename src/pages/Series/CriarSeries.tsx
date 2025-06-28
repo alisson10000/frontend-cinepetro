@@ -6,6 +6,8 @@ type Genero = {
   name: string
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function CriarSeries() {
   const navigate = useNavigate()
 
@@ -19,7 +21,7 @@ export default function CriarSeries() {
   const [generosSelecionados, setGenerosSelecionados] = useState<number[]>([])
 
   useEffect(() => {
-    fetch('http://localhost:8000/genres/')
+    fetch(`${backendUrl}/genres/`)
       .then(res => res.json())
       .then(data => {
         console.log('🎭 Gêneros carregados:', data)
@@ -53,7 +55,7 @@ export default function CriarSeries() {
     const token = localStorage.getItem('token')
 
     try {
-      const res = await fetch('http://localhost:8000/series/upload', {
+      const res = await fetch(`${backendUrl}/series/upload`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token || ''}` },
         body: formData

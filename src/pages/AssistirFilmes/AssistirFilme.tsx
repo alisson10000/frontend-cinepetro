@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import VideoJspPlayer from '@/components/VideoJspPlayer/VideoJspPlayer'
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function AssistirFilme() {
   const { id } = useParams()
   const [filme, setFilme] = useState<any>(null)
@@ -15,7 +17,7 @@ export default function AssistirFilme() {
 
     const carregarDados = async () => {
       try {
-        const resFilme = await fetch(`http://localhost:8000/movies/${id}`, {
+        const resFilme = await fetch(`${backendUrl}/movies/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (!resFilme.ok) throw new Error('Erro ao buscar filme')
@@ -24,7 +26,7 @@ export default function AssistirFilme() {
 
         let tempo = 0
         try {
-          const resProgress = await fetch(`http://localhost:8000/progress/get?movie_id=${id}`, {
+          const resProgress = await fetch(`${backendUrl}/progress/get?movie_id=${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           })
 
@@ -73,7 +75,7 @@ export default function AssistirFilme() {
 
     console.log('📡 Enviando progresso ao backend:', payload)
 
-    fetch('http://localhost:8000/progress/save', {
+    fetch(`${backendUrl}/progress/save`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,7 +122,7 @@ export default function AssistirFilme() {
       )}
 
       <VideoJspPlayer
-        src={`http://localhost:8000/static/videos/${id}.mp4`}
+        src={`${backendUrl}/static/videos/${id}.mp4`}
         tempoSalvo={tempoSalvo}
         onTimeUpdate={handleSalvarTempo}
         title={filme.title}

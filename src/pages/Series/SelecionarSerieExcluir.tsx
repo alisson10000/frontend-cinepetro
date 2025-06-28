@@ -8,6 +8,9 @@ interface Serie {
   end_year?: number
 }
 
+// 🔗 Backend configurado via .env.local
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:8000`
+
 export default function SelecionarSerieExcluir() {
   const [series, setSeries] = useState<Serie[]>([])
   const [mensagem, setMensagem] = useState('')
@@ -24,7 +27,7 @@ export default function SelecionarSerieExcluir() {
 
     const fetchSeries = async () => {
       try {
-        const res = await fetch('http://localhost:8000/series/', {
+        const res = await fetch(`${backendUrl}/series/`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (!res.ok) throw new Error()
