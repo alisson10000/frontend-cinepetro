@@ -34,6 +34,7 @@ export default function Menu() {
                 <Link to="/app/filmes" className="text-white hover:text-yellow-400 transition">Gerenciar Filmes</Link>
                 <Link to="/app/series" className="text-white hover:text-yellow-400 transition">Gerenciar Séries</Link>
                 <Link to="/app/episodios" className="text-white hover:text-yellow-400 transition">Gerenciar Episódios</Link>
+                <Link to="/app/banners" className="text-white hover:text-yellow-400 transition">Gerenciar Banners</Link>
               </>
             )}
           </nav>
@@ -74,6 +75,9 @@ export default function Menu() {
               </Link>
               <Link to="/app/episodios" className="block text-white hover:text-yellow-400" onClick={() => setIsOpen(false)}>
                 Gerenciar Episódios
+              </Link>
+              <Link to="/app/banners" className="block text-white hover:text-yellow-400" onClick={() => setIsOpen(false)}>
+                Gerenciar Banners
               </Link>
             </>
           )}

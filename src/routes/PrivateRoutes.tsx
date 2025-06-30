@@ -37,6 +37,12 @@ import AssistirFilme from '@/pages/AssistirFilmes/AssistirFilme'
 import SelecionarEpisodio from '@/pages/AssistirSerie/SelecionarEpisodio'
 import AssistirEpisodio from '@/pages/AssistirSerie/AssistirEpisodio'
 
+// 🖼️ Banners
+import BannerIndex from '@/pages/Banner/BannerIndex'
+import CriarBanner from '@/pages/Banner/CriarBanner'
+import ListarBanner from '@/pages/Banner/ListarBanner'
+
+
 export default function PrivateRoutes() {
   const [refresh, setRefresh] = useState(0)
 
@@ -57,19 +63,19 @@ export default function PrivateRoutes() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        {/* Página inicial - disponível para todos */}
+        {/* Página inicial */}
         <Route path="/" element={<Home />} />
         {isAdmin && <Route path="admin" element={<Home />} />}
 
-        {/* Rotas públicas de assistir - todos podem acessar */}
+        {/* Rotas públicas para assistir */}
         <Route path="assistir/filme/:id" element={<AssistirFilme />} />
         <Route path="assistir/serie/:serieId" element={<SelecionarEpisodio />} />
         <Route path="assistir/:serieId/:episodioId" element={<AssistirEpisodio />} />
 
-        {/* Área administrativa - somente admin */}
+        {/* Área administrativa */}
         {isAdmin && (
           <>
-            {/* Filmes */}
+            {/* 🎬 Filmes */}
             <Route path="filmes" element={<FilmesIndex />} />
             <Route path="filmes/listar" element={<ListarFilmes />} />
             <Route path="filmes/criar" element={<CriarFilmes />} />
@@ -78,7 +84,7 @@ export default function PrivateRoutes() {
             <Route path="filmes/selecionar-excluir" element={<SelecionarFilmeExcluir />} />
             <Route path="filmes/excluir/:id" element={<ExcluirFilme />} />
 
-            {/* Séries */}
+            {/* 📺 Séries */}
             <Route path="series" element={<SeriesIndex />} />
             <Route path="series/listar" element={<ListarSeries />} />
             <Route path="series/criar" element={<CriarSeries />} />
@@ -87,7 +93,7 @@ export default function PrivateRoutes() {
             <Route path="series/selecionar-excluir" element={<SelecionarSerieExcluir />} />
             <Route path="series/excluir/:id" element={<ExcluirSerie />} />
 
-            {/* Episódios */}
+            {/* 🎞️ Episódios */}
             <Route path="episodios" element={<EpisodesIndex />} />
             <Route path="episodios/listar" element={<ListarEpisodios />} />
             <Route path="episodios/criar" element={<CriarEpisodios />} />
@@ -95,10 +101,16 @@ export default function PrivateRoutes() {
             <Route path="episodios/editar/:id" element={<EditarEpisodio />} />
             <Route path="episodios/selecionar-excluir" element={<SelecionarEpisodioExcluir />} />
             <Route path="episodios/excluir/:id" element={<ExcluirEpisodio />} />
+
+            {/* 🖼️ Banners */}
+            <Route path="banners" element={<BannerIndex />} />
+            <Route path="banners/criar" element={<CriarBanner />} />
+            <Route path="banners/listar" element={<ListarBanner />} />
+            
           </>
         )}
 
-        {/* Fallback: redireciona para home */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
     </Routes>

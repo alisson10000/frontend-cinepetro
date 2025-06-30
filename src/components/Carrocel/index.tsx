@@ -4,10 +4,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 type CarrosselItem = {
   titulo: string
   imagem: string
+  onClick?: () => void // ✅ suporte a clique
 }
 
 interface CarrosselProps {
-  itens: CarrosselItem[]
+  itens: readonly CarrosselItem[]
   tempo?: number
 }
 
@@ -15,6 +16,7 @@ export default function Carrossel({ itens, tempo = 5000 }: CarrosselProps) {
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
+    if (itens.length === 0) return
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % itens.length)
     }, tempo)
@@ -24,23 +26,24 @@ export default function Carrossel({ itens, tempo = 5000 }: CarrosselProps) {
   const anterior = () => setIndex((prev) => (prev - 1 + itens.length) % itens.length)
   const proximo = () => setIndex((prev) => (prev + 1) % itens.length)
 
+  if (itens.length === 0) return null
+
   return (
     <div className="relative w-full h-[450px] overflow-hidden bg-black">
-      {/* Slides container: cada slide ocupa 100% da largura do carrossel */}
+      {/* Slides container */}
       <div
         className="flex transition-transform duration-700 ease-in-out"
-        style={{
-          transform: `translateX(-${index * 100}%)`
-        }}
+        style={{ transform: `translateX(-${index * 100}%)` }}
       >
         {itens.map((item, i) => (
           <div
             key={i}
-            className="w-full h-[450px] flex-shrink-0 flex items-center justify-center relative"
+            onClick={item.onClick} // ✅ ação ao clicar
+            className="w-full h-[450px] flex-shrink-0 flex items-center justify-center relative cursor-pointer"
           >
             <img
               src={item.imagem}
-              alt={item.titulo}
+              alt={item.titulo || `Slide ${i + 1}`}
               className="max-h-full max-w-full object-contain mx-auto"
             />
             <div className="absolute bottom-8 left-6 bg-black/50 px-4 py-2 rounded-lg text-white">
@@ -50,7 +53,7 @@ export default function Carrossel({ itens, tempo = 5000 }: CarrosselProps) {
         ))}
       </div>
 
-      {/* Botões modernos */}
+      {/* Botões */}
       <button
         onClick={anterior}
         className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-3 rounded-full transition"
